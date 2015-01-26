@@ -1,0 +1,71 @@
+#include <TinkerKit.h>
+#include “pitches.h”
+
+TKAccelerometer accelerometer(I0, I1); // creating the object ‘accelerometer’ that belongs to the ‘TKAccelerometer’ class 
+// and giving the values to the desired input pins
+
+TKPotentiometer pot(I2);
+
+
+int melody[] = {
+NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
+}; 
+// note durations: 4 = quarter note, 8 = eighth note, etc.:
+int noteDurations[] = {
+4, 8, 8, 4, 4, 4, 4, 4
+};
+
+int currentX = 0;
+int previousX = 0;
+int valpot = 0;
+
+void setup() 
+{
+// initialize serial communications at 9600 bps
+Serial.begin(9600);
+currentX = accelerometer.readX();
+previousX = accelerometer.readX();
+
+}
+
+void loop()
+{
+// read the both joystick axis values:
+currentX = accelerometer.readX();
+
+valpot = pot.read()/4;
+
+// print the results to the serial monitor:
+Serial.print(“Accelerometer X = ” ); 
+Serial.println(currentX); 
+
+Serial.print(“Potentiometer = “);
+Serial.println(valpot);
+
+
+// wait 10 milliseconds before the next loop
+delay(10); 
+
+if ((previousX - currentX) > valpot) {
+myMelody();
+}
+}
+
+
+void myMelody() {
+for (int thisNote = 0; thisNote < 8; thisNote++) {
+
+// to calculate the note duration, take one second
+// divided by the note type.
+//e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+int noteDuration = 1000 / noteDurations[thisNote];
+tone(O1, melody[thisNote], noteDuration);
+
+// to distinguish the notes, set a minimum time between them.
+// the note’s duration + 30% seems to work well:
+int pauseBetweenNotes = noteDuration * 1.30;
+delay(pauseBetweenNotes);
+// stop the tone playing:
+noTone(O1);
+} 
+}
